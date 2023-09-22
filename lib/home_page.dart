@@ -15,15 +15,10 @@ class _HomePageState extends State<HomePage> {
   String os = Platform.operatingSystem;
 
   // Define a variable to hold the selected subscription amount.
-  String? selectedSubscriptionAmount; // Default to null
+  String selectedSubscriptionAmount = '1.00'; // Default to $1.00
 
   // List of available subscription amounts.
-  List<String?> subscriptionAmounts = [
-    null, // Initial null value
-    '1.00',
-    '5.00',
-    '10.00',
-  ];
+  List<String> subscriptionAmounts = ['1.00', '5.00', '10.00'];
 
   late var applePayButton;
   late var googlePayButton;
@@ -38,7 +33,7 @@ class _HomePageState extends State<HomePage> {
       paymentItems: [
         PaymentItem(
           label: 'Subscription',
-          amount: selectedSubscriptionAmount ?? 'Please select the subscription', // Use the selected value or default message
+          amount: selectedSubscriptionAmount,
           status: PaymentItemStatus.final_price,
         ),
       ],
@@ -58,7 +53,7 @@ class _HomePageState extends State<HomePage> {
       paymentItems: [
         PaymentItem(
           label: 'Subscription',
-          amount: selectedSubscriptionAmount ?? 'Please select the subscription', // Use the selected value or default message
+          amount: selectedSubscriptionAmount,
           status: PaymentItemStatus.final_price,
         ),
       ],
@@ -81,17 +76,17 @@ class _HomePageState extends State<HomePage> {
       // Print the selected price to the console
       print('Selected Subscription Price: \$$amount');
 
-      // Show a toast message
+      // Show a toast message for the selected subscription
       Fluttertoast.showToast(
-        msg: 'Selected Subscription Price: \$$amount',
+        msg: 'Selected Subscription: \$$amount',
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.black,
         textColor: Colors.white,
       );
     } else {
-      // Show a toast message if a subscription is not selected
+      // Show a toast message when the default "Please select subscription" is displayed
       Fluttertoast.showToast(
-        msg: 'Please select the subscription',
+        msg: 'Please select a subscription',
         gravity: ToastGravity.BOTTOM,
         backgroundColor: Colors.red,
         textColor: Colors.white,
@@ -106,14 +101,13 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownButton<String?>(
+            DropdownButton<String>(
               value: selectedSubscriptionAmount,
               onChanged: onSubscriptionAmountSelected,
               items: subscriptionAmounts.map((amount) {
-                return DropdownMenuItem<String?>(
+                return DropdownMenuItem<String>(
                   value: amount,
-                  child: Text(amount != null ? '\$$amount' : 'Please select the subscription'),
-                  // child: Text(amount ?? 'Please select the subscription'), // Use the selected value or default message
+                  child: Text('\$$amount Subscription'),
                 );
               }).toList(),
             ),
