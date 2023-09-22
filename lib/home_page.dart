@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:goole_paymentgatemway/payment_config.dart';
 import 'package:pay/pay.dart';
 
@@ -13,59 +14,112 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String os = Platform.operatingSystem;
 
-  var applePayButton = ApplePayButton(
-    paymentConfiguration: PaymentConfiguration.fromJsonString(defaultApplePay),
-    paymentItems: const [
-      PaymentItem(
-        label: 'Item A',
-        amount: '0.01',
-        status: PaymentItemStatus.final_price,
-      ),
-      PaymentItem(
-        label: 'Item B',
-        amount: '0.01',
-        status: PaymentItemStatus.final_price,
-      ),
-      PaymentItem(
-        label: 'Total',
-        amount: '0.02',
-        status: PaymentItemStatus.final_price,
-      )
-    ],
-    style: ApplePayButtonStyle.black,
-    width: double.infinity,
-    height: 50,
-    type: ApplePayButtonType.buy,
-    margin: const EdgeInsets.only(top: 15.0),
-    onPaymentResult: (result) => debugPrint('Payment Result $result'),
-    loadingIndicator: const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
+  // Define a variable to hold the selected subscription amount.
+  String? selectedSubscriptionAmount; // Default to null
 
-  var googlePayButton = GooglePayButton(
-    paymentConfiguration: PaymentConfiguration.fromJsonString(defaultGooglePay),
-    paymentItems: const [
-      PaymentItem(
-        label: 'Total',
-        amount: '0.01',
-        status: PaymentItemStatus.final_price,
-      )
-    ],
-    type: GooglePayButtonType.pay,
-    margin: const EdgeInsets.only(top: 15.0),
-    onPaymentResult: (result) => debugPrint('Payment Result $result'),
-    loadingIndicator: const Center(
-      child: CircularProgressIndicator(),
-    ),
-  );
+  // List of available subscription amounts.
+  List<String?> subscriptionAmounts = [
+    null, // Initial null value
+    '1.00',
+    '5.00',
+    '10.00',
+  ];
+
+  late var applePayButton;
+  late var googlePayButton;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the payment buttons here where you can access instance variables.
+    applePayButton = ApplePayButton(
+      paymentConfiguration: PaymentConfiguration.fromJsonString(defaultApplePay),
+      paymentItems: [
+        PaymentItem(
+          label: 'Subscription',
+          amount: selectedSubscriptionAmount ?? 'Please select the subscription', // Use the selected value or default message
+          status: PaymentItemStatus.final_price,
+        ),
+      ],
+      style: ApplePayButtonStyle.black,
+      width: double.infinity,
+      height: 50,
+      type: ApplePayButtonType.buy,
+      margin: const EdgeInsets.only(top: 15.0),
+      onPaymentResult: (result) => debugPrint('Payment Result $result'),
+      loadingIndicator: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    googlePayButton = GooglePayButton(
+      paymentConfiguration: PaymentConfiguration.fromJsonString(defaultGooglePay),
+      paymentItems: [
+        PaymentItem(
+          label: 'Subscription',
+          amount: selectedSubscriptionAmount ?? 'Please select the subscription', // Use the selected value or default message
+          status: PaymentItemStatus.final_price,
+        ),
+      ],
+      type: GooglePayButtonType.pay,
+      margin: const EdgeInsets.only(top: 15.0),
+      onPaymentResult: (result) => debugPrint('Payment Result $result'),
+      loadingIndicator: const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+
+  // Create a function to handle the selection of a subscription amount.
+  void onSubscriptionAmountSelected(String? amount) {
+    if (amount != null) {
+      setState(() {
+        selectedSubscriptionAmount = amount;
+      });
+
+      // Print the selected price to the console
+      print('Selected Subscription Price: \$$amount');
+
+      // Show a toast message
+      Fluttertoast.showToast(
+        msg: 'Selected Subscription Price: \$$amount',
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.black,
+        textColor: Colors.white,
+      );
+    } else {
+      // Show a toast message if a subscription is not selected
+      Fluttertoast.showToast(
+        msg: 'Please select the subscription',
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Center(child: Platform.isIOS ? applePayButton : googlePayButton),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            DropdownButton<String?>(
+              value: selectedSubscriptionAmount,
+              onChanged: onSubscriptionAmountSelected,
+              items: subscriptionAmounts.map((amount) {
+                return DropdownMenuItem<String?>(
+                  value: amount,
+                  child: Text(amount != null ? '\$$amount' : 'Please select the subscription'),
+                  // child: Text(amount ?? 'Please select the subscription'), // Use the selected value or default message
+                );
+              }).toList(),
+            ),
+            Platform.isIOS ? applePayButton : googlePayButton,
+          ],
+        ),
       ),
     );
   }
