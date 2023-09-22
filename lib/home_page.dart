@@ -15,10 +15,17 @@ class _HomePageState extends State<HomePage> {
   String os = Platform.operatingSystem;
 
   // Define a variable to hold the selected subscription amount.
-  String selectedSubscriptionAmount = '1.00'; // Default to $1.00
+  // String? selectedSubscriptionAmount; // Initially set to null
 
-  // List of available subscription amounts.
-  List<String> subscriptionAmounts = ['1.00', '5.00', '10.00'];
+  // Define a variable to hold the selected subscription option.
+  String? selectedSubscriptionOption;
+
+  // Define variables for subscription options and their prices.
+  final Map<String, String> subscriptionOptions = {
+    'Weekly': '1.00',
+    'Monthly': '5.00',
+    'Yearly': '10.00',
+  };
 
   late var applePayButton;
   late var googlePayButton;
@@ -33,7 +40,7 @@ class _HomePageState extends State<HomePage> {
       paymentItems: [
         PaymentItem(
           label: 'Subscription',
-          amount: selectedSubscriptionAmount,
+          amount: selectedSubscriptionOption ?? '0.00', // Set to '0.00' if null
           status: PaymentItemStatus.final_price,
         ),
       ],
@@ -53,7 +60,7 @@ class _HomePageState extends State<HomePage> {
       paymentItems: [
         PaymentItem(
           label: 'Subscription',
-          amount: selectedSubscriptionAmount,
+          amount: selectedSubscriptionOption ?? '0.00', // Set to '0.00' if null
           status: PaymentItemStatus.final_price,
         ),
       ],
@@ -66,32 +73,23 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Create a function to handle the selection of a subscription amount.
-  void onSubscriptionAmountSelected(String? amount) {
-    if (amount != null) {
-      setState(() {
-        selectedSubscriptionAmount = amount;
-      });
+  // Create a function to handle the selection of a subscription option.
+  void onSubscriptionOptionSelected(String option) {
+    setState(() {
+      selectedSubscriptionOption = subscriptionOptions[option];
+      selectedSubscriptionOption = option; // Update the selected option.
+    });
 
-      // Print the selected price to the console
-      print('Selected Subscription Price: \$$amount');
+    // Print the selected price to the console
+    print('Selected Subscription Price: \$$selectedSubscriptionOption');
 
-      // Show a toast message for the selected subscription
-      Fluttertoast.showToast(
-        msg: 'Selected Subscription: \$$amount',
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.black,
-        textColor: Colors.white,
-      );
-    } else {
-      // Show a toast message when the default "Please select subscription" is displayed
-      Fluttertoast.showToast(
-        msg: 'Please select a subscription',
-        gravity: ToastGravity.BOTTOM,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-      );
-    }
+    // Show a toast message for the selected subscription
+    Fluttertoast.showToast(
+      msg: 'Selected Subscription: \$$selectedSubscriptionOption',
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black,
+      textColor: Colors.white,
+    );
   }
 
   @override
@@ -101,17 +99,30 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            DropdownButton<String>(
-              value: selectedSubscriptionAmount,
-              onChanged: onSubscriptionAmountSelected,
-              items: subscriptionAmounts.map((amount) {
-                return DropdownMenuItem<String>(
-                  value: amount,
-                  child: Text('\$$amount Subscription'),
-                );
-              }).toList(),
-            ),
-            Platform.isIOS ? applePayButton : googlePayButton,
+            for (final option in subscriptionOptions.keys)
+              GestureDetector(
+                onTap: () => onSubscriptionOptionSelected(option),
+                child: Container(
+                  margin: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: option == selectedSubscriptionOption ? Colors.red : Colors.black,
+                      width: 2.0,
+                    ),
+                    borderRadius: BorderRadius.circular(8.0),
+                    color: option == selectedSubscriptionOption ? Colors.red.withOpacity(0.2) : Colors.transparent,
+                  ),
+                  child: Text('$option Subscription - \$${subscriptionOptions[option]}'),
+                ),
+              ),
+            if (selectedSubscriptionOption != null)
+              Platform.isIOS ? applePayButton : googlePayButton,
+            if (selectedSubscriptionOption == null)
+              Text(
+                'Please select a subscription to enable the payment button.',
+                style: TextStyle(color: Colors.red),
+              ),
           ],
         ),
       ),
